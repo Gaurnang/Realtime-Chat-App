@@ -21,6 +21,7 @@ export const signup = async (req, res) => {
         }
         
         const user = await Users.findOne({ email });
+
         if(user) {
             return res.status(400).json({ message: 'Email already exists!' });
         }
@@ -69,18 +70,36 @@ export const login = async (req, res) => {
     if(password.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters long!' });
     }
+
     try {
         const user = await Users.findOne({ email });
         if(!user) {
             return res.status(400).json({ message: 'Invalid email or password!' });
         }
-        res.json({ message: `User ${email} logged in successfully!` });
+
+        const isPassWordCorrect = await bcrypt.compare(password, user.password);
+
+        if(!isPassWordCorrect) {
+            return res.status(400).json({ message: 'Invalid email or password!' });
+        }
+        
+        const token = generateToken(user._id, res);
+
+        res.json({
+            _id: user._id, 
+            email: user.email,
+            fullName: user.fullName,
+            profilePicture: user.profilePicture,
+            token: token
+        });
+
     } catch (error) {
         res.status(500).json({ message: 'Server error!' });
     }   
 }
 
 export const logout = (req, res) => {
-    res.json({ message: 'Logout successful!' });
+    res.cookie('jwt', "", {maxAge: 0});
+    res.status(200).json({ message: 'Logout successful!' });
 }
 
