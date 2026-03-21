@@ -121,10 +121,12 @@ export const updateProfile = async (req, res) => {
 
         const updatedUser = await Users.findByIdAndUpdate(userId, { profilePicture : uploadResponse.secure_url }, { new: true });
 
-        const user = await Users.findById(userId);
-        
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
         res.status(200).json(updatedUser);
-        
+
     } catch (error) {
         res.status(500).json({ message: 'Server error!' });
     }
