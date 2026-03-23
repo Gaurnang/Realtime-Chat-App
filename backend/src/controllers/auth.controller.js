@@ -7,9 +7,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const signup = async (req, res) => {
-    const {fullName, email, password} = req.body;
-
     try {
+        const { fullName, email, password } = req.body || {};
 
         if(!fullName || !email || !password) {
             return res.status(400).json({ message: 'Full name, email and password are required!' });
@@ -65,7 +64,7 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body || {};
     
     if(!email || !password) {
         return res.status(400).json({ message: 'Email and password are required!' });

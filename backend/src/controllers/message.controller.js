@@ -2,7 +2,7 @@ import cloudinary from '../lib/cloudinary.js';
 import Message from '../models/message.js';
 import Users from '../models/User.js';
 
-export const getAllContacts = async(req, res) => {
+export const getUsersforSidebar = async(req, res) => {
     try {
         
         const loggedInUserId = req.user._id;
@@ -15,7 +15,7 @@ export const getAllContacts = async(req, res) => {
     }
 };
 
-export const getChatPartners = async (req, res) => {
+export const getMessagesWithUserId = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
 
@@ -40,56 +40,49 @@ export const getChatPartners = async (req, res) => {
     }
 };
 
-export const getMessagesWithUserId = async (req, res) => {
+export const getMessages = async (req, res) => {
     try {
-        const loggedInUserId = req.user._id;
-        const { id: userToChatWith } = req.params;
+        const {id : UsertoChatId} = req.params;
+        const senderId = req.user._id;
 
         const messages = await Message.find({
             $or: [
-                { senderId: loggedInUserId, receiverId: userToChatWith },
-                { senderId: userToChatWith, receiverId: loggedInUserId }
+                { senderId, receiverId: UsertoChatId },
+                { senderId: UsertoChatId, receiverId: senderId }
             ]
         }).sort({ createdAt: 1 });
-
         res.status(200).json(messages);
     } 
-    
     catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
+
 export const sendMessage = async (req, res) => {
     try {
-        const senderId = req.user._id;
         const { id: receiverId } = req.params;
-        const { content, image } = req.body;
-
-        if (!content && !image) {
-            return res.status(400).json({ message: 'Message content or image is required!' });
-        }
+        const senderId = req.user._id;
+        const { text, image } = req.body;
 
         let imageUrl = null;
 
         if(image) {
-            //Upload image to cloudinary and get the URL
-            imageUrl = await cloudinary.uploader.upload(image);
+            const uploadResult = await cloudinary.uploader.upload(image);
+            imageUrl = uploadResult.secure_url;
         }
 
         const newMessage = new Message({
             senderId,
             receiverId,
-            content: content || '',
-            image: imageUrl ? imageUrl.secure_url : null
+            content: text,
+            image: imageUrl
         });
-
         await newMessage.save();
 
         res.status(201).json(newMessage);
     } 
-    
-    catch (error) {
+    catch(error) {
         res.status(500).json({ message: error.message });
     }
 };
