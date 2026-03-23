@@ -49,6 +49,7 @@ export const signup = async (req, res) => {
                 email: newUser.email, 
                 fullName: newUser.fullName, 
                 profilePicture: newUser.profilePicture,
+                createdAt: newUser.createdAt,
                 token: token
             });
         }
@@ -93,6 +94,7 @@ export const login = async (req, res) => {
             email: user.email,
             fullName: user.fullName,
             profilePicture: user.profilePicture,
+            createdAt: user.createdAt,
             token: token
         });
 
@@ -118,7 +120,7 @@ export const updateProfile = async (req, res) => {
 
         const uploadResponse = await cloudinary.uploader.upload(profilePicture);
 
-        const updatedUser = await Users.findByIdAndUpdate(userId, { profilePicture : uploadResponse.secure_url }, { new: true });
+        const updatedUser = await Users.findByIdAndUpdate(userId, { profilePicture : uploadResponse.secure_url }, { new: true }).select('-password');
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });

@@ -1,25 +1,97 @@
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '../store/useAuthStore'
+import { Eye, EyeOff, Mail, Lock, User, Loader2 } from 'lucide-react'
 
-function SignupPage() {
+const SignUpPage = () => {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const { signup, isSigningUp } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const result = await signup(formData);
+    if (result.success) {
+      navigate('/');
+    } else {
+      setError(result.message);
+    }
+  };
+
   return (
-    <div className = "w-full max-w-md p-8 space-y-3 rounded-xl bg-slate-800 text-gray-100">
-      <h1 className = "text-2xl font-bold text-center">Sign Up</h1>
-      <form action="" className = "space-y-6 ng-untouched ng-pristine ng-valid">
-        <div className = "space-y-1 text-sm">
-          <label htmlFor="username" className = "block text-gray-400">Username</label>
-          <input type="text" name="username" id="username" placeholder = "Username" className = "w-full px-4 py-3 rounded-md bg-gray-900 text-gray-100 focus:border-violet-400"/>
-        </div>
-        <div className = "space-y-1 text-sm">
-          <label htmlFor="email" className = "block text-gray-400">Email</label>
-          <input type="email" name="email" id="email" placeholder = "Email" className = "w-full px-4 py-3 rounded-md bg-gray-900 text-gray-100 focus:border-violet-400"/>
-        </div>
-        <div className = "space-y-1 text-sm">
-          <label htmlFor="password" className = "block text-gray-400">Password</label>
-          <input type="password" name="password" id="password" placeholder = "Password" className = "w-full px-4 py-3 rounded-md bg-gray-900 text-gray-100 focus:border-violet-400"/>
-        </div>
-        <button className = "block w-full p-3 text-center rounded-sm text-gray-900 bg-violet-400">Sign Up</button>
-      </form>
-    </div>
-  )
-}
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="card w-full max-w-md bg-base-200 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title text-2xl font-bold justify-center mb-2">Create Account</h2>
+          <p className="text-center text-base-content/60 mb-4">Get started with your free account</p>
+          
+          {error && (
+            <div className="alert alert-error text-sm mb-2">
+              <span>{error}</span>
+            </div>
+          )}
 
-export default SignupPage;
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <label className="input input-bordered flex items-center gap-2">
+              <User className="w-4 h-4 opacity-50" />
+              <input
+                type="text"
+                className="grow"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                required
+              />
+            </label>
+
+            <label className="input input-bordered flex items-center gap-2">
+              <Mail className="w-4 h-4 opacity-50" />
+              <input
+                type="email"
+                className="grow"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </label>
+
+            <label className="input input-bordered flex items-center gap-2">
+              <Lock className="w-4 h-4 opacity-50" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="grow"
+                placeholder="Password (min 6 chars)"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                minLength={6}
+              />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="btn btn-ghost btn-xs">
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </label>
+
+            <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
+              {isSigningUp ? <Loader2 className="animate-spin" size={20} /> : 'Sign Up'}
+            </button>
+          </form>
+
+          <p className="text-center mt-4 text-sm">
+            Already have an account?{' '}
+            <Link to="/login" className="link link-primary">Log in</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SignUpPage;
